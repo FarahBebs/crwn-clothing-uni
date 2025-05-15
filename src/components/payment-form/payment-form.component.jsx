@@ -20,15 +20,24 @@ const PaymentForm = () => {
     e.preventDefault();
     if (!stripe || !elements) return;
     setIsProcessingPayment(true);
-    const response = await fetch("/.netlify/functions/create-payment-intent", {
-      method: "post",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ amount: amount * 100 }),
-    }).then((res) => {
-      return res.json();
-    });
+    try {
+      const response = await fetch(
+        "/.netlify/functions/create-payment-intent",
+        {
+          method: "post",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ amount: amount * 100 }),
+        }
+      ).then((res) => {
+        return res.json();
+      });
+    } catch (error) {
+      setIsProcessingPayment(false);
+      return;
+    }
+
     const clientSecret = response.paymentIntent.client_secret;
 
     const paymentResult = await stripe.confirmCardPayment(clientSecret, {
